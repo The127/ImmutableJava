@@ -1,0 +1,28 @@
+//This is a comment
+//see state machine for state errors
+
+/*Multi line 
+
+comment*/
+/*
+allow java.lang.Double;		//allows the use of java.lang.Double class
+
+allow Byte, Number, String from java.lang;	
+//allows the use of java.lang.Byte, java.lang.Number and java.lang.String classes
+
+//allow all from java;
+allow all from java;
+
+//allow all from java.lang except Float and Long classes
+allow all from java.lang 
+	except Float, Long;
+
+//allow this and all subpackages
+allow all from java.lang.+;
+
+*/
+
+//this is the real file content
+allow all from java.lang.+;
+allow java.util.LinkedList;
+allow java.util.function.Function;

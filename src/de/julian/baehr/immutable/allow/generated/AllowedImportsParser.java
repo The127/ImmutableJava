@@ -72,6 +72,11 @@ public class AllowedImportsParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof AllowedImportsListener ) ((AllowedImportsListener)listener).exitCompilationUnit(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof AllowedImportsVisitor ) return ((AllowedImportsVisitor<? extends T>)visitor).visitCompilationUnit(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final CompilationUnitContext compilationUnit() throws RecognitionException {
@@ -128,6 +133,11 @@ public class AllowedImportsParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof AllowedImportsListener ) ((AllowedImportsListener)listener).exitFullyQualifiedName(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof AllowedImportsVisitor ) return ((AllowedImportsVisitor<? extends T>)visitor).visitFullyQualifiedName(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -188,6 +198,11 @@ public class AllowedImportsParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof AllowedImportsListener ) ((AllowedImportsListener)listener).exitSubPackages(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof AllowedImportsVisitor ) return ((AllowedImportsVisitor<? extends T>)visitor).visitSubPackages(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 
 	public final SubPackagesContext subPackages() throws RecognitionException {
@@ -246,6 +261,11 @@ public class AllowedImportsParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof AllowedImportsListener ) ((AllowedImportsListener)listener).exitListOfNames(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof AllowedImportsVisitor ) return ((AllowedImportsVisitor<? extends T>)visitor).visitListOfNames(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 
@@ -349,6 +369,11 @@ public class AllowedImportsParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof AllowedImportsListener ) ((AllowedImportsListener)listener).exitAllowMultipleClasses(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof AllowedImportsVisitor ) return ((AllowedImportsVisitor<? extends T>)visitor).visitAllowMultipleClasses(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 	public static class AllowSomePackageContext extends AllowedImportContext {
 		public FullyQualifiedNameContext allowedPackage;
@@ -373,6 +398,11 @@ public class AllowedImportsParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof AllowedImportsListener ) ((AllowedImportsListener)listener).exitAllowSomePackage(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof AllowedImportsVisitor ) return ((AllowedImportsVisitor<? extends T>)visitor).visitAllowSomePackage(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 	public static class AllowSingleClassContext extends AllowedImportContext {
 		public FullyQualifiedNameContext allowedClass;
@@ -389,6 +419,11 @@ public class AllowedImportsParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof AllowedImportsListener ) ((AllowedImportsListener)listener).exitAllowSingleClass(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof AllowedImportsVisitor ) return ((AllowedImportsVisitor<? extends T>)visitor).visitAllowSingleClass(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 	public static class AllowSubPackagesContext extends AllowedImportContext {
@@ -409,6 +444,11 @@ public class AllowedImportsParser extends Parser {
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof AllowedImportsListener ) ((AllowedImportsListener)listener).exitAllowSubPackages(this);
 		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof AllowedImportsVisitor ) return ((AllowedImportsVisitor<? extends T>)visitor).visitAllowSubPackages(this);
+			else return visitor.visitChildren(this);
+		}
 	}
 	public static class AllowAllPackageContext extends AllowedImportContext {
 		public FullyQualifiedNameContext allowedPackage;
@@ -427,6 +467,11 @@ public class AllowedImportsParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof AllowedImportsListener ) ((AllowedImportsListener)listener).exitAllowAllPackage(this);
+		}
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof AllowedImportsVisitor ) return ((AllowedImportsVisitor<? extends T>)visitor).visitAllowAllPackage(this);
+			else return visitor.visitChildren(this);
 		}
 	}
 

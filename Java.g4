@@ -45,10 +45,10 @@ grammar Java;
 	package de.julian.baehr.immutable.generated;
 }
 
-/*--------------------------------------------------- here*/
-/*################################################ to here*/
+//--------------------------------- from here via 
+//################################# to here via 
 
-/*--------------------------------------------------- here*/
+//--------------------------------- from here via CompilationUnitListener
 // starting point for parsing a java file
 compilationUnit
     :   packageDeclaration importDeclaration* typeDeclaration? EOF
@@ -65,11 +65,15 @@ importDeclaration
     |	'import' 'static' methodName=qualifiedName ';' 			#staticImport
     |	'import' 'static' className=qualifiedName ('.' '*') ';' #staticImportMany
     ;
+//################################# to here via CompilationUnitListener
 
+//--------------------------------- from here via TypeDeclarationListener
 typeDeclaration
     :   (classDeclaration | enumDeclaration | interfaceDeclaration | annotationTypeDeclaration)
     ;
+//################################# to here via TypeDeclarationListener
 
+//--------------------------------- from here via ModifierListener
 modifierList
 	: modifier
 	| modifierList modifier
@@ -105,14 +109,19 @@ variableModifier
     :   'final'		#simpleVariableModifier
     |   annotation	#annotationVariableModifier
     ;
+//################################# to here via ModifierListener
 
+//--------------------------------- from here via ClassDeclarationListener
 classDeclaration
     :   modifiers=modifierList? 'class' className=Identifier typeParameters?
         ('extends' extensionType=typeType)?
         ('implements' typeList)?
         classBody
     ;
+//################################# to here via ClassDeclarationListener
+
 //parameters
+//--------------------------------- from here via TypeParametersListener
 typeParameters
     :   '<' typeParameter (',' typeParameter)* '>'
     ;
@@ -124,7 +133,9 @@ typeParameter
 typeBound
     :   typeType ('&' typeType)*
     ;
+//################################# to here via TypeParametersListener
 
+//--------------------------------- from here via EnumDeclarationListener
 enumDeclaration
     :   modifiers=modifierList? ENUM enumName=Identifier ('implements' typeList)?
         '{' enumConstants? ','? enumBodyDeclarations? '}'
@@ -133,113 +144,152 @@ enumDeclaration
 enumConstants
     :   enumConstant (',' enumConstant)*
     ;
+//################################# to here via EnumDeclarationListener
 
+//--------------------------------- from here via EnumConstantListener
 enumConstant
     :   annotation* Identifier arguments? classBody?
     ;
+//################################# to here via EnumConstantListener
 
+//--------------------------------- from here via EnumDeclarationListener
 enumBodyDeclarations
     :   ';' classBodyDeclaration*
     ;
+//################################# to here via EnumDeclarationListener
 
+//--------------------------------- from here via InterfaceDeclarationListener
 interfaceDeclaration
     :   modifiers=modifierList? 'interface' interfaceName=Identifier typeParameters? ('extends' typeList)? interfaceBody
     ;
+//################################# to here via InterfaceDeclarationListener
 
+//--------------------------------- from here via TypeListListener
 typeList
     :   typeType (',' typeType)*
     ;
+//################################# to here via TypeListListener
 
+//--------------------------------- from here via ClassBodyListener
 classBody
     :   '{' classBodyDeclaration* '}'
     ;
+//################################# to here also via ClassBodyListener
 
+//--------------------------------- from here via InterfaceDeclarationListener
 interfaceBody
     :   '{' interfaceBodyDeclaration* '}'
     ;
+//################################# to here via InterfaceDeclarationListener
 
+//--------------------------------- from here via ClassBodyListener
 classBodyDeclaration
     :   ';'									#classBodyDeclarationSemicolon
-    |   'static'? block						#classBodyDeclarationStaticBlock
+    |   isStatic='static'? block			#classBodyDeclarationStaticBlock //also field initializers
     |   memberDeclaration					#classBodyDeclarationMember
     ;
 
 memberDeclaration
-    :   methodDeclaration
-    |   genericMethodDeclaration
-    |   fieldDeclaration
-    |   constructorDeclaration
-    |   genericConstructorDeclaration
-    |   interfaceDeclaration
-    |   annotationTypeDeclaration
-    |   classDeclaration
-    |   enumDeclaration
-    ;
+    :   (methodDeclaration
+	    |   genericMethodDeclaration
+	    |   fieldDeclaration
+	    |   constructorDeclaration
+	    |   genericConstructorDeclaration) #memberDeclarationMember
+//################################# to here also via ClassBodyListener
 
+//--------------------------------- from here via TypeDeclarationListener
+    |	(interfaceDeclaration
+	    |   annotationTypeDeclaration
+	    |   classDeclaration
+	    |   enumDeclaration) #memberDeclarationSubType
+    ;
+//################################# to here via TypeDeclarationListener
+
+//--------------------------------- from here via MethodListener
 /* We use rule this even for void methods which cannot have [] after parameters.
    This simplifies grammar and we can consider void to be a type, which
    renders the [] matching as a context-sensitive issue or a semantic check
    for invalid return type after parsing.
  */
 methodDeclaration
-    :   modifierList? (typeType|'void') Identifier formalParameters (brackets='[' ']')*
+    :   modifierList? (typeType|'void') Identifier formalParameters //brackets //not allowing [] in grammar
         ('throws' qualifiedNameList)?
         (   methodBody
         |   ';'
         )
     ;
+//################################# to here via MethodListener
 
+//--------------------------------- from here via GenericMethodListener
 genericMethodDeclaration
     :   modifierList? typeParameters methodDeclaration
     ;
+//################################# to here via GenericMethodListener
 
+//--------------------------------- from here via ConstructorListener
 constructorDeclaration
     :   modifierList? Identifier formalParameters ('throws' qualifiedNameList)?
         constructorBody
     ;
+//################################# to here via ConstructorListener
 
+//--------------------------------- from here via GenericConstructorListener
 genericConstructorDeclaration
     :   modifierList? typeParameters constructorDeclaration
     ;
+//################################# to here via GenericConstructorListener
 
+//--------------------------------- from here via FieldListener
 fieldDeclaration
     :   modifierList? typeType variableDeclarators ';'
     ;
+//################################# to here via FieldListener
 
+//--------------------------------- from here via InterfaceDeclarationListener
 interfaceBodyDeclaration
     :   interfaceMemberDeclaration
     |   ';'
     ;
 
 interfaceMemberDeclaration
-    :   constDeclaration
-    |   interfaceMethodDeclaration
-    |   genericInterfaceMethodDeclaration
-    |   interfaceDeclaration
-    |   annotationTypeDeclaration
-    |   classDeclaration
-    |   enumDeclaration
+    :   (constDeclaration
+	    |   interfaceMethodDeclaration
+	    |   genericInterfaceMethodDeclaration)	#interfaceMemberDeclarationMember
+//################################# from here via InterfaceDeclarationListener
+//--------------------------------- from here via TypeDeclarationListener
+    |   (interfaceDeclaration
+	    |   annotationTypeDeclaration
+	    |   classDeclaration
+	    |   enumDeclaration) #interfaceMemberDeclarationType
+//################################# to here via TypeDeclarationListener
     ;
 
+//--------------------------------- from here via ConstDeclarationListener
 constDeclaration
     :   modifierList? typeType constantDeclarator (',' constantDeclarator)* ';'
     ;
 
 constantDeclarator
-    :   Identifier (brackets='[' ']')* '=' variableInitializer
+    :   Identifier brackets '=' variableInitializer
     ;
+//################################# to here via ConstDeclarationListener
 
+//--------------------------------- to here via InterfaceMethodListener
 // see matching of [] comment in methodDeclaratorRest
 interfaceMethodDeclaration
-    :   modifierList? (typeType|'void') Identifier formalParameters (brackets='[' ']')*
+    :   modifierList? (typeType|'void') Identifier formalParameters //(brackets='[' ']')*
         ('throws' qualifiedNameList)?
         ';'
     ;
+//################################# to here via InterfaceMethodListener
 
+//--------------------------------- to here via GenericInterfaceMethodListener
 genericInterfaceMethodDeclaration
     :   modifierList? typeParameters interfaceMethodDeclaration
     ;
+//################################# to here via GenericInterfaceMethodListener
 
+//--------------------------------- to here via VariableDeclaratorsListener
 variableDeclarators
     :   variableDeclarator (',' variableDeclarator)*
     ;
@@ -247,35 +297,44 @@ variableDeclarators
 variableDeclarator
     :   variableDeclaratorId ('=' variableInitializer)?
     ;
+//################################# to here via VariableDeclaratorsListener
 
+//--------------------------------- to here also via VariableDeclaratorIdListener
 variableDeclaratorId
     :   Identifier (arrayBrackets='[' ']')*
     ;
-/*################################################ to here*/
+//################################# to here via VariableDeclaratorIdListener
 
+//--------------------------------- to here via VariableInitializerListener
 variableInitializer
     :   arrayInitializer
     |   expression
     ;
+//################################# to here via VariableDeclaratorsListener
 
+//--------------------------------- to here via ArrayInitializerListener
 arrayInitializer
     :   '{' (variableInitializer (',' variableInitializer)* (',')? )? '}'
     ;
+//################################# to here via ArrayInitializerListener
 
-/*--------------------------------------------------- here*/
+//--------------------------------- from here via getText
 enumConstantName
     :   Identifier
     ;
+//################################# to here via getText
 
+//--------------------------------- from here via TypeTypeListener
 typeType
-    :   cType=classOrInterfaceTypeList brackets=arrayDeclaration?
-    |   pType=primitiveType brackets=arrayDeclaration?
+    :   cType=classOrInterfaceTypeList arrayDeclaration?
+    |   pType=primitiveType arrayDeclaration?
     ;
     
 arrayDeclaration
 	: ('[' ']')+
 	;    
 
+//--------------------------------- from here also via ResourceSpecificationListener
 classOrInterfaceTypeList
     :   classOrInterfaceType
     | 	classOrInterfaceTypeList '.' classOrInterfaceType
@@ -284,7 +343,8 @@ classOrInterfaceTypeList
 classOrInterfaceType
 	: id=Identifier typeArguments?
 	;
-
+//################################# to here also via ResourceSpecificationListener
+    
 primitiveType
     :   'boolean'
     |   'char'
@@ -295,7 +355,9 @@ primitiveType
     |   'float'
     |   'double'
     ;
+//################################# to here via TypeTypeListener
 
+//--------------------------------- from here via TypeArgumentsListener
 typeArguments
     :   '<' typeArgumentsList '>'
     ;
@@ -309,11 +371,15 @@ typeArgument
     :   typeType	#normalTypeArgument
     |   '?' (keyWord=('extends' | 'super') typeType)?	#wildcardTypeArgument
     ;  
+//################################# to here via TypeArgumentsListener
 
+//--------------------------------- from here via QualifiedNameListListener
 qualifiedNameList	//via .getText()
     :   qualifiedName (',' qualifiedName)*
     ;
+//################################# to here via QualifiedNameListListener
 
+//--------------------------------- from here via FormalParametersListener
 formalParameters
     :   '(' formalParameterList? ')'
     ;
@@ -330,17 +396,21 @@ formalParameter
 lastFormalParameter
     :   variableModifierList? typeType '...' variableDeclaratorId
     ;
-/*################################################ to here*/
+//################################# to here via FormalParametersListener
 
+//--------------------------------- from here via MethodListener
 methodBody
     :   block
     ;
+//################################# to here via MethodListener
 
+//--------------------------------- from here via ConstructorListener
 constructorBody
     :   block
     ;
+//################################# to here via ConstructorListener
 
-/*--------------------------------------------------- here partially via .getText()*/
+//--------------------------------- from here via getText
 qualifiedName
     :   Identifier ('.' Identifier)*
     ;  
@@ -353,9 +423,11 @@ literal
     |   BooleanLiteral
     |   'null'
     ;
+//################################# to here via getText
 
 // ANNOTATIONS
 
+//--------------------------------- from here via AnnotationListener
 annotation
     :   '@' annotationName ( '(' ( elementValuePairs | elementValue )? ')' )?
     ;
@@ -365,21 +437,27 @@ annotationName : qualifiedName ;
 elementValuePairs
     :   elementValuePair (',' elementValuePair)*
     ;
-
 elementValuePair
     :   Identifier '=' elementValue
     ;
+//################################# to here via AnnotationListener
+
+//--------------------------------- from here via ElementValueListener
 
 elementValue
     :   expression
     |   annotation
     |   elementValueArrayInitializer
     ;
+//################################# to here via ElementValueListener
 
+//--------------------------------- from here via ElementValueArrayInitializerListener
 elementValueArrayInitializer
     :   '{' (elementValue (',' elementValue)*)? (',')? '}'
     ;
+//################################# to here via ElementValueArrayInitializerListener
 
+//--------------------------------- from here via AnnotationTypeDeclarationListener
 annotationTypeDeclaration
     :   modifiers=modifierList? '@' 'interface' name=Identifier annotationTypeBody
     ;
@@ -394,79 +472,105 @@ annotationTypeElementDeclaration
     ;
 
 annotationTypeElementRest
-    :   annotationMethodOrConstantRest ';'
-    |   classDeclaration ';'?
-    |   interfaceDeclaration ';'?
-    |   enumDeclaration ';'?
-    |   annotationTypeDeclaration ';'?
+    :   annotationMethodOrConstantRest ';'	#annotationTypeElementRestMethod
+//################################# to here via AnnotationTypeDeclarationListener
+//--------------------------------- from here via TypeDeclarationListener
+    |   (classDeclaration 
+    	|   interfaceDeclaration 
+    	|   enumDeclaration 
+    	|   annotationTypeDeclaration 
+    	';'?) #annotationTypeElementRestType
     ;
+//################################# to here via TypeDeclarationListener
 
+//--------------------------------- from here via AnnotationTypeDeclarationListener
 annotationMethodOrConstantRest
     :   annotationMethod
     |   annotationConstant
     ;
+//################################# to here via AnnotationTypeDeclarationListener
     
+//--------------------------------- from here via AnnotationMethodListener
 annotationMethod
-	: modifierList? typeType annotationMethodRest
+	: modifierList? typeType id=Identifier annotationMethodRest 
 	;
+//################################# to here via AnnotationMethodListener
 	
+//--------------------------------- from here via AnnotationConstantListener
 annotationConstant
 	: modifierList? typeType annotationConstantRest
 	;
+//################################# to here via AnnotationConstantListener
 
+//--------------------------------- from here via AnnotationMethodListener
 annotationMethodRest
-    :   id=Identifier '(' ')' defaultValue?
+    : '(' ')' defaultValue?
     ;
+//################################# to here via AnnotationMethodListener
 
+//--------------------------------- from here via AnnotationConstantListener
 annotationConstantRest
     :   variableDeclarators
     ;
+//################################# to here via AnnotationConstantListener
 
+//--------------------------------- from here via AnnotationMethodListener
 defaultValue
     :   'default' elementValue
     ;   
-/*################################################ to here*/
+//################################# to here via AnnotationMethodListener
 
 // STATEMENTS / BLOCKS
 
+//--------------------------------- from here via BlockListener
 block
     :   '{' blockStatement* '}'
     ;
+//################################# to here via BlockListener
 
+//--------------------------------- from here via BlockStatementListener
 blockStatement
     :   localVariableDeclarationStatement
     |   statement
     |   typeDeclaration
     ;
+//################################# to here via BlockStatementListener
 
+//--------------------------------- from here via LocalVariableDeclarationStatementListener
 localVariableDeclarationStatement
     :    localVariableDeclaration ';'
     ;
+//################################# to here via LocalVariableDeclarationStatementListener
 
+//--------------------------------- from here via LocalVariableDeclarationListener
 localVariableDeclaration
     :   variableModifierList? typeType variableDeclarators
     ;
+//################################# to here via LocalVariableDeclarationListener
 
+//--------------------------------- from here via respective StatementListener
 statement
-    :   block
-    |   ASSERT expression (':' expression)? ';'
-    |   'if' parExpression statement ('else' statement)?
-    |   'for' '(' forControl ')' statement
-    |   'while' parExpression statement
-    |   'do' statement 'while' parExpression ';'
-    |   'try' block (catchClause+ finallyBlock? | finallyBlock)
-    |   'try' resourceSpecification block catchClause* finallyBlock?
-    |   'switch' parExpression '{' switchBlockStatementGroup* switchLabel* '}'
-    |   'synchronized' parExpression block
-    |   'return' expression? ';'
-    |   'throw' expression ';'
-    |   'break' Identifier? ';'
-    |   'continue' Identifier? ';'
-    |   ';'
-    |   statementExpression ';'
-    |   Identifier ':' statement
+    :   block																	#statementBlock
+    |   ASSERT exp1=expression (':' exp2=expression)? ';'						#statementAssert
+    |   'if' parExpression ifStmt=statement ('else' elseStmt=statement)?		#statementIf
+    |   'for' '(' forControl ')' statement										#statementFor
+    |   'while' parExpression statement											#statementWhile
+    |   'do' statement 'while' parExpression ';'								#statementDo
+    |   'try' block (catchClause+ finallyBlock? | finallyBlock)					#statementTry
+    |   'try' resourceSpecification block catchClause* finallyBlock?			#statementTryResources
+    |   'switch' parExpression '{' switchBlockStatementGroup* switchLabel* '}'	#statementSwitch
+    |   'synchronized' parExpression block										#statementSynchronized
+    |   'return' expression? ';'												#statementReturn
+    |   'throw' expression ';'													#statementThrow
+    |   'break' Identifier? ';'													#statementBreak
+    |   'continue' Identifier? ';'												#statementContinue
+    |   ';'																		#statementSemicolon
+    |   statementExpression ';'													#statementStatemenExpression
+    |   Identifier ':' statement												#statementIdentifierStatement
     ;
+//################################# to here via StatementListener
 
+//--------------------------------- from here via CatchClauseListener
 catchClause
     :   'catch' '(' variableModifierList? catchType Identifier ')' block
     ;
@@ -474,11 +578,15 @@ catchClause
 catchType
     :   qualifiedName ('|' qualifiedName)*
     ;
+//################################# from here via CatchClauseListener
 
+//--------------------------------- from here via FinallyBlockListener
 finallyBlock
     :   'finally' block
     ;
+//################################# from here via FinallyBlockListener
 
+//--------------------------------- from here via ResourceSpecificationListener
 resourceSpecification
     :   '(' resources ';'? ')'
     ;
@@ -490,20 +598,26 @@ resources
 resource
     :   variableModifierList? classOrInterfaceTypeList variableDeclaratorId '=' expression
     ;
+//################################# from here via ResourceSpecificationListener
 
+//--------------------------------- from here via SwitchBlockStatementGroupListener
 /** Matches cases then statements, both of which are mandatory.
  *  To handle empty cases at the end, we add switchLabel* to statement.
  */
 switchBlockStatementGroup
     :   switchLabel+ blockStatement+
     ;
+//################################# to here via SwitchBlockStatementGroupListener
 
+//--------------------------------- from here via SwitchLabelListener
 switchLabel
     :   'case' constantExpression ':'
     |   'case' enumConstantName ':'
     |   'default' ':'
     ;
+//################################# to here via SwitchLabelListener
 
+//--------------------------------- from here via StatementForListener
 forControl
     :   enhancedForControl
     |   forInit? ';' expression? ';' forUpdate?
@@ -521,17 +635,23 @@ enhancedForControl
 forUpdate
     :   expressionList
     ;
+//################################# to here via StatementForListener
 
 // EXPRESSIONS
 
+//--------------------------------- from here via ParExpressionListener
 parExpression
     :   '(' expression ')'
     ;
+//################################# to here via ParExpressionListener
 
+//--------------------------------- from here via ExpressionListListener
 expressionList
     :   expression (',' expression)*
     ;
+//################################# to here via ExpressionListListener
 
+//--------------------------------- from here via ExpressionListener and respective listeners
 statementExpression
     :   expression
     ;
@@ -541,33 +661,34 @@ constantExpression
     ;
 
 expression
-    :   primary
-    |   expression '.' Identifier
-    |   expression '.' 'this'
-    |   expression '.' 'new' nonWildcardTypeArguments? innerCreator
-    |   expression '.' 'super' superSuffix
-    |   expression '.' explicitGenericInvocation
-    |   expression '[' expression ']'
-    |   expression '(' expressionList? ')'
-    |   'new' creator
-    |   '(' typeType ')' expression
-    |   expression ('++' | '--')
-    |   ('+'|'-'|'++'|'--') expression
-    |   ('~'|'!') expression
-    |   expression ('*'|'/'|'%') expression
-    |   expression ('+'|'-') expression
-    |   expression ('<' '<' | '>' '>' '>' | '>' '>') expression
-    |   expression ('<=' | '>=' | '>' | '<') expression
-    |   expression 'instanceof' typeType
-    |   expression ('==' | '!=') expression
-    |   expression '&' expression
-    |   expression '^' expression
-    |   expression '|' expression
-    |   expression '&&' expression
-    |   expression '||' expression
-    |   expression '?' expression ':' expression
-    |   <assoc=right> expression
-        (   '='
+    :   primary																	#expressionPrimary
+    |   expression '.' Identifier												#expressionDotId
+    |   expression '.' 'this'													#expressionDotThis
+    |   expression '.' 'new' nonWildcardTypeArguments? innerCreator				#expressionDotNewWildInner
+    |	'#new' Identifier specialParameters										#expressionAutoCpy
+    |   expression '.' 'super' superSuffix										#expressionDotSuperSuffix
+    |   expression '.' explicitGenericInvocation								#expressionDotExplGenInvoc
+    |   exp1=expression '[' exp2=expression ']'									#expressionArray
+    |   expression '(' expressionList? ')'										#expressionMethodCall
+    |   'new' creator															#expressionCtor
+    |   '(' typeType ')' expression												#expressionCast
+    |   expression op=('++' | '--')												#expressionPost
+    |   op=('+'|'-'|'++'|'--') expression										#expressionPre
+    |   op=('~'|'!') expression													#expressionNot
+    |   exp1=expression op=('*'|'/'|'%') exp2=expression						#expressionMulDivMod
+    |   exp1=expression op=('+'|'-') exp2=expression							#expressionAddSub
+    |   exp1=expression op=('<<' | '>>>' | '>>' ) exp2=expression				#expressionLessGreater
+    |   exp1=expression op=('<=' | '>=' | '>' | '<') exp2=expression			#expressionLessGreaterEqual
+    |   expression 'instanceof' typeType										#expressionInstanceof
+    |   exp1=expression op=('==' | '!=') exp2=expression						#expressionEquals
+    |   exp1=expression '&' exp2=expression										#expressionAnd
+    |   exp1=expression '^' exp2=expression										#expressionXor
+    |   exp1=expression '|' exp2=expression										#expressionOr
+    |   exp1=expression '&&' exp2=expression									#expressionAndAnd
+    |   exp1=expression '||' exp2=expression									#expressionOrOr
+    |   exp1=expression '?' exp2=expression ':' exp3=expression					#expressionTern
+    |   <assoc=right> exp1=expression
+        op=(   '='
         |   '+='
         |   '-='
         |   '*='
@@ -580,77 +701,130 @@ expression
         |   '<<='
         |   '%='
         )
-        expression
+        exp2=expression															#expressionMath
     ;
+//################################# to here via ExpressionListener
 
+//--------------------------------- from here via SpecialParametersListener
+specialParameters
+	: '(' specialParameter* ')'
+	;
+	
+specialParameter
+	: Identifier '=' expression
+	;	
+//################################# to here via SpecialParametersListener
+
+//--------------------------------- from here via PrimaryListener and respective listeners
 primary
-    :   '(' expression ')'
-    |   'this'
-    |   'super'
-    |   literal
-    |   Identifier
-    |   typeType '.' 'class'
-    |   'void' '.' 'class'
-    |   nonWildcardTypeArguments (explicitGenericInvocationSuffix | 'this' arguments)
+    :   '(' expression ')'																#primExpression
+    |   'this'																			#primThis
+    |   'super'																			#primSuper
+    |   literal																			#primLiteral
+    |   Identifier																		#primId
+    |   typeType '.' 'class'															#primClass
+    |   'void' '.' 'class'																#primVClass
+    |   nonWildcardTypeArguments (explicitGenericInvocationSuffix | 'this' arguments)	#primNonWild
     ;
+//################################# to here via PrimaryListener
 
+//--------------------------------- from here via CreatorListener
 creator
     :   nonWildcardTypeArguments createdName classCreatorRest
     |   createdName (arrayCreatorRest | classCreatorRest)
     ;
+//################################# to here via CreatorListener
 
+//--------------------------------- from here via CreatedNameListener
 createdName
-    :   Identifier typeArgumentsOrDiamond? ('.' Identifier typeArgumentsOrDiamond?)*
+    :   createdNamePart ('.' createdNamePart)*
     |   primitiveType
     ;
+    
+createdNamePart
+	: Identifier typeArgumentsOrDiamond?
+	;
+    
+//################################# to here via CreatedNameListener
 
+//--------------------------------- from here via InnerCreatorListener
 innerCreator
     :   Identifier nonWildcardTypeArgumentsOrDiamond? classCreatorRest
     ;
+//################################# to here via InnerCreatorListener
 
+//--------------------------------- from here via ArrayCreatorRestListener
 arrayCreatorRest
     :   '['
-        (   ']' ('[' ']')* arrayInitializer
-        |   expression ']' ('[' expression ']')* ('[' ']')*
+        (   ']' brackets arrayInitializer
+        |   expression ']' bracketExpression* brackets
         )
     ;
+//################################# to here via ArrayCreatorRestListener
+    
+//--------------------------------- from here via BracketExpressionListener
+bracketExpression
+	: '[' expression ']'
+	;
+//################################# to here via BracketExpressionListener
 
+//--------------------------------- from here via ClassCreatorRestListener
 classCreatorRest
     :   arguments classBody?
     ;
+//################################# to here via ClassCreatorRestListener
 
+//--------------------------------- from here via ExplicitGenericInvocationListener
 explicitGenericInvocation
     :   nonWildcardTypeArguments explicitGenericInvocationSuffix
     ;
+//################################# to here via ExplicitGenericInvocationListener
 
+//--------------------------------- from here via NonWildcardTypeArgumentsListener
 nonWildcardTypeArguments
     :   '<' typeList '>'
     ;
+//################################# to here via NonWildcardTypeArgumentsListener
 
+//--------------------------------- from here via TypeArgumentsOrDiamondListener
 typeArgumentsOrDiamond
     :   '<' '>'
     |   typeArguments
     ;
+//################################# to here via TypeArgumentsOrDiamondListener
 
+//--------------------------------- from here via NonWildcardTypeArgumentsOrDiamondListener
 nonWildcardTypeArgumentsOrDiamond
     :   '<' '>'
     |   nonWildcardTypeArguments
     ;
+//################################# to here via NonWildcardTypeArgumentsOrDiamondListener
 
+//--------------------------------- from here via SuperSuffixListener
 superSuffix
     :   arguments
     |   '.' Identifier arguments?
     ;
+//################################# to here via SuperSuffixListener
 
+//--------------------------------- from here via ExplicitGenericInvocationSuffixListener
 explicitGenericInvocationSuffix
     :   'super' superSuffix
     |   Identifier arguments
     ;
+//################################# to here via ExplicitGenericInvocationSuffixListener
 
+//--------------------------------- from here via ArgumentsListener
 arguments
     :   '(' expressionList? ')'
     ;
+//################################# to here via ArgumentsListener
 
+//------------ via getText()
+brackets
+	: ('[' ']')*
+	;
+//############ via getText()
 
 /*--------------------------------------------------- here to end via lexer */
 // LEXER
