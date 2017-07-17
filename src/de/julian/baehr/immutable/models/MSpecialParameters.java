@@ -3,6 +3,8 @@ package de.julian.baehr.immutable.models;
 import java.util.LinkedList;
 import java.util.List;
 
+import de.julian.baehr.immutable.generated.JavaParser.SpecialParametersContext;
+import de.julian.baehr.immutable.listeners.exceptions.ListenerException;
 import de.julian.baehr.immutable.models.MFormalParameters.MFormalParameter;
 import de.julian.baehr.immutable.models.expressions.MExpression;
 
@@ -26,8 +28,10 @@ public class MSpecialParameters {
 	private final MConstructor autoCpy;
 	private List<MSpecialParameter> parameters = new LinkedList<>();
 	
-	public MSpecialParameters(MConstructor autoCpy){
+	public MSpecialParameters(MConstructor autoCpy, SpecialParametersContext ctx){
 		this.autoCpy = autoCpy;
+		if(autoCpy == null)
+			throw new ListenerException("Auto copy constructor not avaibale here!", ctx);
 	}
 	
 	public void add(MSpecialParameter p){

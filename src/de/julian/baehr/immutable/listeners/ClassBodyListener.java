@@ -191,6 +191,8 @@ public class ClassBodyListener extends ImmutableBaseListener<MClassBody> {
 	
 	@Override
 	public void enterMemberDeclarationSubType(MemberDeclarationSubTypeContext ctx) {
-		enterThere(ctx, new TypeDeclarationListener()).ifResult(getResult()::addSubType);
+		if(!firstMemberPass){
+			enterThere(ctx, new TypeDeclarationListener()).ifResult(getResult()::addSubType);
+		}
 	}
 }

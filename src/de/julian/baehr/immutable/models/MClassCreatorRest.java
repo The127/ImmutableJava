@@ -15,6 +15,7 @@ public class MClassCreatorRest {
 	
 	@Override
 	public String toString() {
-		return arguments.toString() + " " + body.toString();
+		return arguments.toString() 
+				+ " " + ModelUtil.ifNotNull(body, () -> body.toString()) ;
 	}
 }

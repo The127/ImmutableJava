@@ -10,6 +10,6 @@ public class MArguments {
 	
 	@Override
 	public String toString() {
-		return "(" + expressionList.toString() + ")";
+		return "(" + ModelUtil.ifNotNull(expressionList, () -> expressionList.toString()) + ")";
 	}
 }

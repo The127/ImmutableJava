@@ -20,7 +20,7 @@ public class SpecialParametersListener extends ImmutableBaseListener<MSpecialPar
 	
 	@Override
 	public void enterSpecialParameters(SpecialParametersContext ctx) {
-		setResult(new MSpecialParameters(autoCpy));
+		setResult(new MSpecialParameters(autoCpy, ctx));
 		enterHere(ctx.specialParameter());
 	}
 	
